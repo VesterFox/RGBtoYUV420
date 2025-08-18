@@ -4,6 +4,9 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <thread>
+#include <algorithm>
+
 #include "yuv.h"
 
 struct BMPHeader
@@ -31,13 +34,13 @@ struct BMPInfoHeader
 };
 
 /// <summary>
-/// Конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr)
+/// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr)
 /// </summary>
 /// <param name="file"> Поток с данными входного файла. </param>
 /// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
 /// <param name="yuvResult"> Результат конвертации. </param>
-/// <returns></returns>
+/// <returns> True, в случае успеха, иначе False. </returns>
 bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
     YUVFrame& yuvResult);
 
@@ -56,7 +59,8 @@ bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inp
 /// <param name="inputStream"> Поток с данными из входного .bmp файла. </param>
 /// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-void readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader);
+/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
+bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader);
 
 /// <summary>
 /// Чтение входного BMP и сбор необходимой информации о нём. Конвертация в YUV420.
@@ -66,5 +70,5 @@ void readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoH
 /// <param name="yuvFrame"> Кадр (изображение) YUV в формате структуры <see cref="YUVFrame">. Вывод результата конвертации. </param>
 /// <param name="imageWidth"> Полученная ширина разрешения изображения.</param>
 /// <param name="imageHeight"> Полученная высота разрешения изображения. </param>
-/// <returns></returns>
+/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
 bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight);

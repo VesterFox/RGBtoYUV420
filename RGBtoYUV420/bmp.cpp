@@ -2,32 +2,25 @@
 #include "yuv.h"
 #include "utils.h"
 
-void readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader)
+bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader)
 {
-    read(inputStream, header.fileType, sizeof(header.fileType));
-    read(inputStream, header.fileSize, sizeof(header.fileSize));
-    read(inputStream, header.reserved0, sizeof(header.reserved0));
-    read(inputStream, header.reserved1, sizeof(header.reserved1));
-    read(inputStream, header.offset, sizeof(header.offset));
-    read(inputStream, infoHeader, sizeof(infoHeader));
+    bool resultStatus = true;
+    resultStatus = read(inputStream, header.fileType, sizeof(header.fileType));
+    resultStatus = read(inputStream, header.fileSize, sizeof(header.fileSize));
+    resultStatus = read(inputStream, header.reserved0, sizeof(header.reserved0));
+    resultStatus = read(inputStream, header.reserved1, sizeof(header.reserved1));
+    resultStatus = read(inputStream, header.offset, sizeof(header.offset));
+    resultStatus = read(inputStream, infoHeader, sizeof(infoHeader));
+    return resultStatus;
 }
 
-bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
-    YUVFrame& yuvResult)
+void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY, int endY,
+    int width, int height, int row_size, YUVFrame& yuvResult)
 {
-    int width = infoHeader.width;
-    int height = infoHeader.height;
-    int row_size = ((width * 3 + 3) / 4) * 4;
-
-    yuvResult.yPlane.resize(width * height);
-    yuvResult.uPlane.resize((width / 2) * (height / 2));
-    yuvResult.vPlane.resize((width / 2) * (height / 2));
-
-    std::vector<uint8_t> row(row_size);
-
-    for (int y = height - 1; y >= 0; y--)
+    for (int y = startY; y < endY; ++y)
     {
-        file.read(reinterpret_cast<char*>(row.data()), row_size);
+        int bmpRow = height - 1 - y;
+        const uint8_t* row = bmpData.data() + bmpRow * row_size;
 
         for (int x = 0; x < width; ++x)
         {
@@ -56,6 +49,44 @@ bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfo
                 yuvResult.vPlane[uvIndex] = static_cast<uint8_t>(V);
             }
         }
+    }
+}
+
+bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
+    YUVFrame& yuvResult)
+{
+    int width = infoHeader.width;
+    int height = infoHeader.height;
+    int row_size = ((width * 3 + 3) / 4) * 4;
+
+    yuvResult.yPlane.resize(width * height);
+    yuvResult.uPlane.resize((width / 2) * (height / 2));
+    yuvResult.vPlane.resize((width / 2) * (height / 2));
+
+    std::vector<uint8_t> bmpData(row_size * height);
+    file.read(reinterpret_cast<char*>(bmpData.data()), bmpData.size());
+
+    unsigned int nThreads = std::max(1u, std::thread::hardware_concurrency());
+    int blockSize = height / nThreads;
+
+    std::vector<std::thread> threads;
+    int startY = 0;
+
+    for(unsigned int i = 0; i < nThreads; ++i)
+    {
+        int endY = (i == nThreads - 1) ? height : startY + blockSize;
+
+        threads.emplace_back
+        (
+            convertRGBtoYUVBlock, std::cref(bmpData), startY, endY, width, height, row_size, std::ref(yuvResult)
+        );
+
+        startY = endY;
+    }
+
+    for(auto& t : threads)
+    {
+        t.join();
     }
 
     return true;
