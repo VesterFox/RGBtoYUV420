@@ -1,4 +1,4 @@
-#include "bmp.h"
+п»ї#include "bmp.h"
 #include "yuv.h"
 #include "utils.h"
 
@@ -28,20 +28,20 @@ void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY, int e
             uint8_t G = row[x * 3 + 1];
             uint8_t R = row[x * 3 + 2];
 
-            // Конвертация в YUV (BT.601 YCbCr)
+            // РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РІ YUV (BT.601 YCbCr)
             int Y = static_cast<int>(0.299 * R + 0.587 * G + 0.144 * B);
             int U = static_cast<int>(-0.169 * R - 0.331 * G + 0.500 * B + 128);
             int V = static_cast<int>(0.500 * R - 0.419 * G - 0.081 * B + 128);
 
-            // Ограничение в диапазон 0-255
+            // РћРіСЂР°РЅРёС‡РµРЅРёРµ РІ РґРёР°РїР°Р·РѕРЅ 0-255
             Y = std::min(255, std::max(0, Y));
             U = std::min(255, std::max(0, U));
             V = std::min(255, std::max(0, V));
 
-            // Полная Y
+            // РџРѕР»РЅР°СЏ Y
             yuvResult.yPlane[y * width + x] = static_cast<uint8_t>(Y);
 
-            // для UV 1 пиксель на 2x2 блок
+            // РґР»СЏ UV 1 РїРёРєСЃРµР»СЊ РЅР° 2x2 Р±Р»РѕРє
             if (y % 2 == 0 && x % 2 == 0)
             {
                 int uvIndex = (y / 2) * (width / 2) + (x / 2);
@@ -94,49 +94,49 @@ bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfo
 
 bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inputVideo)
 {
-    std::cout << "Входной BMP:" << std::endl;
+    std::cout << "Р’С…РѕРґРЅРѕР№ BMP:" << std::endl;
     if (header.fileSize < 54)
     {
-        std::cerr << "Некорректный размер: " + std::to_string(header.fileSize) + "< 54." << std::endl;
+        std::cerr << "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЂР°Р·РјРµСЂ: " + std::to_string(header.fileSize) + "< 54." << std::endl;
         return false;
     }
 
     if (header.fileType != 0x4D42)
     {
-        std::cerr << "Некорретный тип в заголовке: " + std::to_string(header.fileType) << std::endl;
+        std::cerr << "РќРµРєРѕСЂСЂРµС‚РЅС‹Р№ С‚РёРї РІ Р·Р°РіРѕР»РѕРІРєРµ: " + std::to_string(header.fileType) << std::endl;
         return false;
     }
 
     if (infoHeader.bitCount != 24)
     {
-        std::cerr << "Некорректный bpp: " + std::to_string(infoHeader.bitCount) << std::endl;
+        std::cerr << "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ bpp: " + std::to_string(infoHeader.bitCount) << std::endl;
         return false;
     }
 
     if (infoHeader.compression != 0 && infoHeader.compression != 11)
     {
-        std::cerr << "Некорректное сжатие: id = " + std::to_string(infoHeader.compression) << std::endl;
+        std::cerr << "РќРµРєРѕСЂСЂРµРєС‚РЅРѕРµ СЃР¶Р°С‚РёРµ: id = " + std::to_string(infoHeader.compression) << std::endl;
         return false;
     }
 
     if (infoHeader.colorsUsed != 0)
     {
-        std::cerr << "Некорректная палитра: " + std::to_string(infoHeader.colorsUsed) + " цветов." << std::endl;
+        std::cerr << "РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РїР°Р»РёС‚СЂР°: " + std::to_string(infoHeader.colorsUsed) + " С†РІРµС‚РѕРІ." << std::endl;
         return false;
     }
 
     if (infoHeader.width > inputVideo.width || infoHeader.height > inputVideo.height)
     {
-        std::cerr << "Размер должен быть <= размера видео. \n BMP размер:"
-            + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) + " > видео "
+        std::cerr << "Р Р°Р·РјРµСЂ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ <= СЂР°Р·РјРµСЂР° РІРёРґРµРѕ. \n BMP СЂР°Р·РјРµСЂ:"
+            + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) + " > РІРёРґРµРѕ "
             + std::to_string(inputVideo.width) + "x" + std::to_string(inputVideo.height) << std::endl;
         return false;
     }
 
-    std::cout << std::to_string(infoHeader.bitCount) + " бит/пкс. "
-        << "Сжатие: " + std::to_string(infoHeader.compression) << ". "
-        << "Палитра: " + std::to_string(infoHeader.colorsUsed) << ". "
-        << "Размер: " + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) << std::endl;
+    std::cout << std::to_string(infoHeader.bitCount) + " Р±РёС‚/РїРєСЃ. "
+        << "РЎР¶Р°С‚РёРµ: " + std::to_string(infoHeader.compression) << ". "
+        << "РџР°Р»РёС‚СЂР°: " + std::to_string(infoHeader.colorsUsed) << ". "
+        << "Р Р°Р·РјРµСЂ: " + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) << std::endl;
 
     return true;
 }
@@ -145,29 +145,29 @@ bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, i
 {
     std::ifstream inputBMPFile(fileName, std::ios::binary);
     if (!inputBMPFile) {
-        std::cerr << "Ошибка чтения файла." << std::endl;
+        std::cerr << "РћС€РёР±РєР° С‡С‚РµРЅРёСЏ С„Р°Р№Р»Р°." << std::endl;
         return false;
     }
 
-    // Чтение BMP
+    // Р§С‚РµРЅРёРµ BMP
     BMPHeader header;
     BMPInfoHeader infoHeader;
     readBMP(inputBMPFile, header, infoHeader);
 
-    // Валидация BMP
+    // Р’Р°Р»РёРґР°С†РёСЏ BMP
     if (!isCorrectInputFile(header, infoHeader, inputVideo)) return false;
 
-    // Конвертация BMP
+    // РљРѕРЅРІРµСЂС‚Р°С†РёСЏ BMP
     inputBMPFile.seekg(header.offset, std::ios::beg);
 
     if (!convertRGBtoYUV(inputBMPFile, header, infoHeader, yuvFrame))
     {
-        std::cerr << "Ошибка конвертации BMP в YUV." << std::endl;
+        std::cerr << "РћС€РёР±РєР° РєРѕРЅРІРµСЂС‚Р°С†РёРё BMP РІ YUV." << std::endl;
         return false;
     }
     else
     {
-        std::cout << "Конвертация кадра завершена." << std::endl;
+        std::cout << "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РєР°РґСЂР° Р·Р°РІРµСЂС€РµРЅР°." << std::endl;
     }
 
     imageWidth = infoHeader.width;

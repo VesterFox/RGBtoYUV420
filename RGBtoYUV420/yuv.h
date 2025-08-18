@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <vector>
 #include <fstream>
@@ -19,27 +19,27 @@ struct YUVVideo
 };
 
 /// <summary>
-/// Чтение видео из ifstream и запись в структуру YUVVideo.
+/// Р§С‚РµРЅРёРµ РІРёРґРµРѕ РёР· ifstream Рё Р·Р°РїРёСЃСЊ РІ СЃС‚СЂСѓРєС‚СѓСЂСѓ YUVVideo.
 /// </summary>
-/// <param name="fp"> Поток с информацией из .yuv видео файла.</param>
-/// <param name="yuvVideo"> Ссылка на <see cref="YUVVideo">. </param>
-/// <param name="size"> Размер входных данных в ifstream. </param>
+/// <param name="fp"> РџРѕС‚РѕРє СЃ РёРЅС„РѕСЂРјР°С†РёРµР№ РёР· .yuv РІРёРґРµРѕ С„Р°Р№Р»Р°.</param>
+/// <param name="yuvVideo"> РЎСЃС‹Р»РєР° РЅР° <see cref="YUVVideo">. </param>
+/// <param name="size"> Р Р°Р·РјРµСЂ РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С… РІ ifstream. </param>
 void readYUVVideo(std::ifstream& fp, YUVVideo& yuvVideo, uint64_t size);
 
 /// <summary>
-/// Сохранение видео в .yuv формате.
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РІРёРґРµРѕ РІ .yuv С„РѕСЂРјР°С‚Рµ.
 /// </summary>
-/// <param name="outputFilename"> Имя выходного файла (включая расширение).</param>
-/// <param name="yuv"> <see cref=YUVVideo> структура видео в формате YUV</param>
-/// <returns> True, если операция успешная, иначе False. </returns>
+/// <param name="outputFilename"> РРјСЏ РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р° (РІРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ).</param>
+/// <param name="yuv"> <see cref=YUVVideo> СЃС‚СЂСѓРєС‚СѓСЂР° РІРёРґРµРѕ РІ С„РѕСЂРјР°С‚Рµ YUV</param>
+/// <returns> True, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°СЏ, РёРЅР°С‡Рµ False. </returns>
 bool saveYUVVideo(const std::string& outputFilename, YUVVideo& yuv);
 
 /// <summary>
-/// Чтение входного видео и сбор необходимой информации о нём
+/// Р§С‚РµРЅРёРµ РІС…РѕРґРЅРѕРіРѕ РІРёРґРµРѕ Рё СЃР±РѕСЂ РЅРµРѕР±С…РѕРґРёРјРѕР№ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РЅС‘Рј
 /// </summary>
-/// <param name="fileName"> Имя (путь) до файла, включая расширение. </param>
-/// <param name="inputVideo"> <see cref="YUVVideo"> структура видео YUV. Вывод результата чтения файла. </param>
-/// <param name="videoWidth"> Ширина разрешения видео.</param>
-/// <param name="videoHeight"> Высота разрешения видео. </param>
-/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
+/// <param name="fileName"> РРјСЏ (РїСѓС‚СЊ) РґРѕ С„Р°Р№Р»Р°, РІРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ. </param>
+/// <param name="inputVideo"> <see cref="YUVVideo"> СЃС‚СЂСѓРєС‚СѓСЂР° РІРёРґРµРѕ YUV. Р’С‹РІРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р° С‡С‚РµРЅРёСЏ С„Р°Р№Р»Р°. </param>
+/// <param name="videoWidth"> РЁРёСЂРёРЅР° СЂР°Р·СЂРµС€РµРЅРёСЏ РІРёРґРµРѕ.</param>
+/// <param name="videoHeight"> Р’С‹СЃРѕС‚Р° СЂР°Р·СЂРµС€РµРЅРёСЏ РІРёРґРµРѕ. </param>
+/// <returns> True, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°, РёРЅР°С‡Рµ False. Р’С‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РѕС€РёР±РєРµ Рё С…РѕРґРµ РѕРїРµСЂР°С†РёРё. </returns>
 bool prepareYUVVideo(std::string fileName, YUVVideo& inputVideo, int videoWidth, int videoHeight);

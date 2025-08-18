@@ -1,27 +1,27 @@
-#pragma once
+п»ї#pragma once
 #include "yuv.h"
 
 /// <summary>
-/// Наложение одного YUV4:2:0 кадра на другой.
+/// РќР°Р»РѕР¶РµРЅРёРµ РѕРґРЅРѕРіРѕ YUV4:2:0 РєР°РґСЂР° РЅР° РґСЂСѓРіРѕР№.
 /// </summary>
-/// <param name="dstFrame"> Кадр на который будет накладываться изображение.</param>
-/// <param name="overlayFrame"> Изображение, которое будет наложено поверх кадра. </param>
-/// <param name="dstWidth"> Ширина кадра. </param>
-/// <param name="dstHeight"> Высота кадра. </param>
-/// <param name="offsetX"> Отступ наложения по горизонтали в px. </param>
-/// <param name="offsetYpos"> Отступ наложения по вертикали в px. </param>
-/// <param name="overlayWidth"> Ширина накладываемого изображения. </param>
-/// <param name="overlayHeight"> Высота накладываемого изображения. </param>
+/// <param name="dstFrame"> РљР°РґСЂ РЅР° РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РЅР°РєР»Р°РґС‹РІР°С‚СЊСЃСЏ РёР·РѕР±СЂР°Р¶РµРЅРёРµ.</param>
+/// <param name="overlayFrame"> РР·РѕР±СЂР°Р¶РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ РЅР°Р»РѕР¶РµРЅРѕ РїРѕРІРµСЂС… РєР°РґСЂР°. </param>
+/// <param name="dstWidth"> РЁРёСЂРёРЅР° РєР°РґСЂР°. </param>
+/// <param name="dstHeight"> Р’С‹СЃРѕС‚Р° РєР°РґСЂР°. </param>
+/// <param name="offsetX"> РћС‚СЃС‚СѓРї РЅР°Р»РѕР¶РµРЅРёСЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё РІ px. </param>
+/// <param name="offsetYpos"> РћС‚СЃС‚СѓРї РЅР°Р»РѕР¶РµРЅРёСЏ РїРѕ РІРµСЂС‚РёРєР°Р»Рё РІ px. </param>
+/// <param name="overlayWidth"> РЁРёСЂРёРЅР° РЅР°РєР»Р°РґС‹РІР°РµРјРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. </param>
+/// <param name="overlayHeight"> Р’С‹СЃРѕС‚Р° РЅР°РєР»Р°РґС‹РІР°РµРјРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. </param>
 void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     int dstWidth, int dstHeight,
     int offsetX, int offsetYpos,
     int overlayWidth, int overlayHeight);
 
 /// <summary>
-/// Наложить YUV420 изображение поверх YUV420 видео.
+/// РќР°Р»РѕР¶РёС‚СЊ YUV420 РёР·РѕР±СЂР°Р¶РµРЅРёРµ РїРѕРІРµСЂС… YUV420 РІРёРґРµРѕ.
 /// </summary>
-/// <param name="image"> Изображение. </param>
-/// <param name="video"> Видео поверх которого будет накладываться изображение. </param>
-/// <param name="imageWidth"> Ширина изображения. </param>
-/// <param name="imageHeight"> Высота изображения. </param>
+/// <param name="image"> РР·РѕР±СЂР°Р¶РµРЅРёРµ. </param>
+/// <param name="video"> Р’РёРґРµРѕ РїРѕРІРµСЂС… РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґРµС‚ РЅР°РєР»Р°РґС‹РІР°С‚СЊСЃСЏ РёР·РѕР±СЂР°Р¶РµРЅРёРµ. </param>
+/// <param name="imageWidth"> РЁРёСЂРёРЅР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. </param>
+/// <param name="imageHeight"> Р’С‹СЃРѕС‚Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. </param>
 void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight);

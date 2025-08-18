@@ -1,4 +1,4 @@
-#include "yuv.h"
+ï»¿#include "yuv.h"
 #include <iostream>
 
 void readYUVVideo(std::ifstream& fp, YUVVideo& yuvVideo, uint64_t size)
@@ -27,7 +27,7 @@ bool prepareYUVVideo(std::string fileName, YUVVideo& inputVideo, int videoWidth,
 {
     std::ifstream inputYUVFile(fileName, std::ios::binary);
     if (!inputYUVFile) {
-        std::cerr << "Îøèáêà ÷òåíèÿ ôàéëà." << std::endl;
+        std::cerr << "ÐžÑˆÐ¸Ð±ÐºÐ° Ñ‡Ñ‚ÐµÐ½Ð¸Ñ Ñ„Ð°Ð¹Ð»Ð°." << std::endl;
         return false;
     }
 

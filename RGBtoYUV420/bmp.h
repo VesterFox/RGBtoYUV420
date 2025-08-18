@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include <cstdint>
 #include <fstream>
@@ -34,41 +34,41 @@ struct BMPInfoHeader
 };
 
 /// <summary>
-/// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr)
+/// РњРЅРѕРіРѕРїРѕС‚РѕС‡РЅР°СЏ РєРѕРЅРІРµСЂС‚Р°С†РёСЏ .bmp РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ RGB РІ YUV4:2:0 (BT.601 YCbCr)
 /// </summary>
-/// <param name="file"> Поток с данными входного файла. </param>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
+/// <param name="file"> РџРѕС‚РѕРє СЃ РґР°РЅРЅС‹РјРё РІС…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°. </param>
+/// <param name="header"> Р—Р°РіРѕР»РѕРІРѕРє Bitmap С„Р°Р№Р»Р° (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <param name="yuvResult"> Результат конвертации. </param>
-/// <returns> True, в случае успеха, иначе False. </returns>
+/// <param name="yuvResult"> Р РµР·СѓР»СЊС‚Р°С‚ РєРѕРЅРІРµСЂС‚Р°С†РёРё. </param>
+/// <returns> True, РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°, РёРЅР°С‡Рµ False. </returns>
 bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
     YUVFrame& yuvResult);
 
 /// <summary>
-/// Проверка входящего .bmp файла (через структуры полученные в результате  на удв. критериев конвертации. (Выводит ошибки через cerr).
+/// РџСЂРѕРІРµСЂРєР° РІС…РѕРґСЏС‰РµРіРѕ .bmp С„Р°Р№Р»Р° (С‡РµСЂРµР· СЃС‚СЂСѓРєС‚СѓСЂС‹ РїРѕР»СѓС‡РµРЅРЅС‹Рµ РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ  РЅР° СѓРґРІ. РєСЂРёС‚РµСЂРёРµРІ РєРѕРЅРІРµСЂС‚Р°С†РёРё. (Р’С‹РІРѕРґРёС‚ РѕС€РёР±РєРё С‡РµСЂРµР· cerr).
 /// </summary>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
+/// <param name="header"> Р—Р°РіРѕР»РѕРІРѕРє Bitmap С„Р°Р№Р»Р° (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <param name="inputVideo"> Видео .yuv, на которое будет накладываться изображение. </param>
-/// <returns> True, если BMP имеет корректные характеристики, иначе false. </returns>
+/// <param name="inputVideo"> Р’РёРґРµРѕ .yuv, РЅР° РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ РЅР°РєР»Р°РґС‹РІР°С‚СЊСЃСЏ РёР·РѕР±СЂР°Р¶РµРЅРёРµ. </param>
+/// <returns> True, РµСЃР»Рё BMP РёРјРµРµС‚ РєРѕСЂСЂРµРєС‚РЅС‹Рµ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРєРё, РёРЅР°С‡Рµ false. </returns>
 bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inputVideo);
 
 /// <summary>
-/// Чтение BMP из потока и передача данных в <see cref="BMPHeader"> и <see cref="BMPInfoHeader">.
+/// Р§С‚РµРЅРёРµ BMP РёР· РїРѕС‚РѕРєР° Рё РїРµСЂРµРґР°С‡Р° РґР°РЅРЅС‹С… РІ <see cref="BMPHeader"> Рё <see cref="BMPInfoHeader">.
 /// </summary>
-/// <param name="inputStream"> Поток с данными из входного .bmp файла. </param>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
+/// <param name="inputStream"> РџРѕС‚РѕРє СЃ РґР°РЅРЅС‹РјРё РёР· РІС…РѕРґРЅРѕРіРѕ .bmp С„Р°Р№Р»Р°. </param>
+/// <param name="header"> Р—Р°РіРѕР»РѕРІРѕРє Bitmap С„Р°Р№Р»Р° (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
+/// <returns> True, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°, РёРЅР°С‡Рµ False. Р’С‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РѕС€РёР±РєРµ Рё С…РѕРґРµ РѕРїРµСЂР°С†РёРё. </returns>
 bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader);
 
 /// <summary>
-/// Чтение входного BMP и сбор необходимой информации о нём. Конвертация в YUV420.
+/// Р§С‚РµРЅРёРµ РІС…РѕРґРЅРѕРіРѕ BMP Рё СЃР±РѕСЂ РЅРµРѕР±С…РѕРґРёРјРѕР№ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РЅС‘Рј. РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РІ YUV420.
 /// </summary>
-/// <param name="fileName"> Имя (путь) до файла, включая расширение. </param>
-/// <param name="inputVideo"> <see cref="YUVVideo"> структура видео YUV. </param>
-/// <param name="yuvFrame"> Кадр (изображение) YUV в формате структуры <see cref="YUVFrame">. Вывод результата конвертации. </param>
-/// <param name="imageWidth"> Полученная ширина разрешения изображения.</param>
-/// <param name="imageHeight"> Полученная высота разрешения изображения. </param>
-/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
+/// <param name="fileName"> РРјСЏ (РїСѓС‚СЊ) РґРѕ С„Р°Р№Р»Р°, РІРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ. </param>
+/// <param name="inputVideo"> <see cref="YUVVideo"> СЃС‚СЂСѓРєС‚СѓСЂР° РІРёРґРµРѕ YUV. </param>
+/// <param name="yuvFrame"> РљР°РґСЂ (РёР·РѕР±СЂР°Р¶РµРЅРёРµ) YUV РІ С„РѕСЂРјР°С‚Рµ СЃС‚СЂСѓРєС‚СѓСЂС‹ <see cref="YUVFrame">. Р’С‹РІРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р° РєРѕРЅРІРµСЂС‚Р°С†РёРё. </param>
+/// <param name="imageWidth"> РџРѕР»СѓС‡РµРЅРЅР°СЏ С€РёСЂРёРЅР° СЂР°Р·СЂРµС€РµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.</param>
+/// <param name="imageHeight"> РџРѕР»СѓС‡РµРЅРЅР°СЏ РІС‹СЃРѕС‚Р° СЂР°Р·СЂРµС€РµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ. </param>
+/// <returns> True, РµСЃР»Рё РѕРїРµСЂР°С†РёСЏ СѓСЃРїРµС€РЅР°, РёРЅР°С‡Рµ False. Р’С‹РІРѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РѕС€РёР±РєРµ Рё С…РѕРґРµ РѕРїРµСЂР°С†РёРё. </returns>
 bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight);

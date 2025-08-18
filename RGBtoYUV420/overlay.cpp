@@ -1,4 +1,4 @@
-#include "overlay.h"
+ï»¿#include "overlay.h"
 
 void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     int dstWidth, int dstHeight,
@@ -8,11 +8,11 @@ void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     // Y
     for (int row = 0; row < overlayHeight; ++row)
     {
-        // Ñäâèã óêàçàòåëÿ íà íà÷àëî ïîäñòðîêè, ñ êîòîðîé íà÷íåòñÿ íàëîæåíèÿ
-        // (Îòñòóï â ïèêñåëÿõ ïî âåðòèêàëè + êîë-âî îáðàáîòàííûõ ñòðîê) * äëèíó ñòðîêè + îòñòóï ïî ãîðèçîíòàëè ñëåâà
+        // Ð¡Ð´Ð²Ð¸Ð³ ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»Ñ Ð½Ð° Ð½Ð°Ñ‡Ð°Ð»Ð¾ Ð¿Ð¾Ð´ÑÑ‚Ñ€Ð¾ÐºÐ¸, Ñ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¹ Ð½Ð°Ñ‡Ð½ÐµÑ‚ÑÑ Ð½Ð°Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
+        // (ÐžÑ‚ÑÑ‚ÑƒÐ¿ Ð² Ð¿Ð¸ÐºÑÐµÐ»ÑÑ… Ð¿Ð¾ Ð²ÐµÑ€Ñ‚Ð¸ÐºÐ°Ð»Ð¸ + ÐºÐ¾Ð»-Ð²Ð¾ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚Ð°Ð½Ð½Ñ‹Ñ… ÑÑ‚Ñ€Ð¾Ðº) * Ð´Ð»Ð¸Ð½Ñƒ ÑÑ‚Ñ€Ð¾ÐºÐ¸ + Ð¾Ñ‚ÑÑ‚ÑƒÐ¿ Ð¿Ð¾ Ð³Ð¾Ñ€Ð¸Ð·Ð¾Ð½Ñ‚Ð°Ð»Ð¸ ÑÐ»ÐµÐ²Ð°
         uint8_t* dstLine = dstFrame.yPlane.data() + (offsetYpos + row) * dstWidth + offsetX;
 
-        // Ñäâèã óêàçàòåëÿ íà òåêóùóþ ñòðîêó èçîáðàæåíèÿ
+        // Ð¡Ð´Ð²Ð¸Ð³ ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»Ñ Ð½Ð° Ñ‚ÐµÐºÑƒÑ‰ÑƒÑŽ ÑÑ‚Ñ€Ð¾ÐºÑƒ Ð¸Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ
         const uint8_t* srcLine = overlayFrame.yPlane.data() + row * overlayWidth;
 
         std::memcpy(dstLine, srcLine, overlayWidth);
@@ -45,7 +45,7 @@ void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
 
 void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight)
 {
-    // Êîîðäèíàòû íàëîæåíèÿ èçîáðàæåíèÿ ïî öåíòðó âèäåî. 
+    // ÐšÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚Ñ‹ Ð½Ð°Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ Ð¸Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ Ð¿Ð¾ Ñ†ÐµÐ½Ñ‚Ñ€Ñƒ Ð²Ð¸Ð´ÐµÐ¾. 
     int yHorOffset = floor((video.width - imageWidth) / 2);
     int yVerOffset = floor((video.height - imageHeight) / 2);
 
