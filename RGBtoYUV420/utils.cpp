@@ -1,5 +1,30 @@
 ﻿#include "utils.h"
 
+bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter)
+{
+    std::string firstArgument = offsetXArg;
+    if (firstArgument == "center") placeInCenter = true;
+    else
+    {
+        try
+        {
+            offsetX = std::stoi(offsetXArg);
+            offsetY = std::stoi(offsetYArg);
+        }
+        catch (const std::invalid_argument&)
+        {
+            std::cerr << "Значение отступа в пикселях должно быть числом." << std::endl;
+            return false;
+        }
+        catch (const std::out_of_range&)
+        {
+            std::cerr << "Значение отступа в пикселях должно быть числом." << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
 bool setVideoResolution(char* argvStandatdId, int& width, int& height)
 {
     int standardId = 0;
@@ -34,8 +59,9 @@ bool setVideoResolution(char* argvStandatdId, int& width, int& height)
 void printHelp()
 {
     std::cout << "Выполняет наложение BMP (RGB 24 bit/px без альфы, палитры и компрессии) на YUV420 видеоряд с преобразованием." << std::endl
-        << "Использование: имя входного .bmp, имя входного видео .yuv, номер стандарта видео,"
-        << "имя выходного файла .yuv." << std::endl
+        << "Использование: имя входного .bmp, имя входного видео .yuv, имя выходного файла .yuv,"
+        << "номер стандарта видео (из таблицы ниже), отступ по горизонтали, отступ по вериткали." << std::endl
+        << "Если необходимо задать отступ ровно по центру, вместо значений отступа укажите слово \"center\"." << std::endl
         << "Имена файлов необходимого указывать с расширением." << std::endl
         << "Поддерживаемые стандарты видео:" << std::endl;
     int id = 0;

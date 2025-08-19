@@ -2,18 +2,6 @@
 #include "yuv.h"
 #include "utils.h"
 
-bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader)
-{
-    bool resultStatus = true;
-    resultStatus = read(inputStream, header.fileType, sizeof(header.fileType));
-    resultStatus = read(inputStream, header.fileSize, sizeof(header.fileSize));
-    resultStatus = read(inputStream, header.reserved0, sizeof(header.reserved0));
-    resultStatus = read(inputStream, header.reserved1, sizeof(header.reserved1));
-    resultStatus = read(inputStream, header.offset, sizeof(header.offset));
-    resultStatus = read(inputStream, infoHeader, sizeof(infoHeader));
-    return resultStatus;
-}
-
 void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY, int endY,
     int width, int height, int row_size, YUVFrame& yuvResult)
 {
@@ -139,6 +127,18 @@ bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inp
         << "Размер: " + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) << std::endl;
 
     return true;
+}
+
+bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader)
+{
+    bool resultStatus = true;
+    resultStatus = read(inputStream, header.fileType, sizeof(header.fileType));
+    resultStatus = read(inputStream, header.fileSize, sizeof(header.fileSize));
+    resultStatus = read(inputStream, header.reserved0, sizeof(header.reserved0));
+    resultStatus = read(inputStream, header.reserved1, sizeof(header.reserved1));
+    resultStatus = read(inputStream, header.offset, sizeof(header.offset));
+    resultStatus = read(inputStream, infoHeader, sizeof(infoHeader));
+    return resultStatus;
 }
 
 bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight)

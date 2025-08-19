@@ -46,6 +46,17 @@ const std::vector<VideoResolution> standardResolutions =
 };
 
 /// <summary>
+/// Чтение сдвига из пользовательских аргументов.
+/// </summary>
+/// <param name="offsetXArg"> Сдвиг по горизонтали из аргументов. Может включать значение center для наложения по центру кадра. </param>
+/// <param name="offsetYArg"> Сдвиг по вертикали из аргументов. </param>
+/// <param name="offsetX"> Вывод сдвига по горизонтали в int. </param>
+/// <param name="offsetY"> Вывод сдвига по вертикали в int. </param>
+/// <param name="placeInCenter"> Возвращает True, если пользователь выбрал center в offsetXArg, иначе false. </param>
+/// <returns> Возвращает True, если значения корректны, False, если пользователем допущена ошибка. </returns>
+bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter);
+
+/// <summary>
 /// Чтение выбраного стандарта видео из пользовательских аргументов и получение разрешения этого стандарта. (Выводит ошибки в cerr).
 /// </summary>
 /// <param name="standardId"> Порядковый номер выбранного стандарта. </param>
