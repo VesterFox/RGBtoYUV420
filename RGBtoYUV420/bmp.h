@@ -34,7 +34,7 @@ struct BMPInfoHeader
 };
 
 /// <summary>
-/// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr)
+/// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr). Используется SSE2.
 /// </summary>
 /// <param name="file"> Поток с данными входного файла. </param>
 /// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
