@@ -56,6 +56,18 @@ bool setVideoResolution(char* argvStandatdId, int& width, int& height)
     return true;
 };
 
+bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename)
+{
+    outStream.close();
+    outStream.open(filename, std::ios::binary | std::ios::app);
+    if (!outStream)
+    {
+        std::cerr << "Ошибка записи yuv файла." << std::endl;
+        return false;
+    }
+    return true;
+}
+
 void printHelp()
 {
     std::cout << "Выполняет наложение BMP (RGB 24 bit/px без альфы, палитры и компрессии) на YUV420 видеоряд с преобразованием." << std::endl

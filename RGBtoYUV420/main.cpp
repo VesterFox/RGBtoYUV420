@@ -38,6 +38,15 @@ bool OverlayBMPonYUV(std::string inputYUVVideoFilename, std::string inputBMPFile
 
     unsigned int remains = frameAmount;
 
+    std::ofstream outStream(outputFilename, std::ios::binary | std::ios::trunc);
+    if (!outStream)
+    {
+        std::cerr << "Ошибка записи yuv файла." << std::endl;
+        return false;
+    }
+
+    bool firstPass = true;
+
     while (remains > 0)
     {
         int frameAmountInBuffer = std::min(remains, nThreads);
@@ -53,14 +62,16 @@ bool OverlayBMPonYUV(std::string inputYUVVideoFilename, std::string inputBMPFile
         else
             overlayOnVideo(overlayYUV, videoFrameBuffer, imageWidth, imageHeight, videoWidth, videoHeight, xOffset, yOffset);
 
-        // Сохранение результата
-        if (!saveYUVFrames(outputFilename, videoFrameBuffer))
-        {
-            std::cerr << "Ошибка записи yuv файла." << std::endl;
-            return false;
-        }
+        saveYUVFrames(outStream, videoFrameBuffer);
 
         remains -= frameAmountInBuffer;
+
+        // Для последующих батчей вызывается открытие ofstream с флагом app, а не trunc
+        if(firstPass)
+        {
+            firstPass = false;
+            if(!ReopenOfstreamForApp(outStream, outputFilename)) return false;
+        }
     }
 
     std::cout << "Файл успешно сохранен." << std::endl;

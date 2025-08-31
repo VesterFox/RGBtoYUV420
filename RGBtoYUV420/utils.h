@@ -66,6 +66,14 @@ bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, b
 bool setVideoResolution(char* argvStandatdId, int& width, int& height);
 
 /// <summary>
+/// Вызов открытия ofstream для filename с флагом app.
+/// </summary>
+/// <param name="outStream"> ofstream, который будет закрыт и открыт с флагами binary | app. </param>
+/// <param name="filename"> Имя файла, в который будет записывать данные поток. </param>
+/// <returns> True, в случае успеха, иначе False. </returns>
+bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename);
+
+/// <summary>
 /// Вывод --help.
 /// </summary>
 void printHelp();

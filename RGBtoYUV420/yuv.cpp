@@ -16,18 +16,12 @@ YUVFrame readYUVFrame(std::ifstream& fp, int YSize, int UVSize)
     return result;
 }
 
-bool saveYUVFrames(const std::string& outputFilename, YUVRingBuffer& yuv)
+void saveYUVFrames(std::ofstream& outStream, YUVRingBuffer& yuv)
 {
-    std::ofstream out(outputFilename, std::ios::binary | std::ios::app);
-    if (!out)
-        return false;
-
     for (int i = 0; i < yuv.size(); i++)
     {
-        out.write(reinterpret_cast<const char*>(yuv.getFrame(i).yPlane.data()), yuv.getFrame(i).yPlane.size());
-        out.write(reinterpret_cast<const char*>(yuv.getFrame(i).uPlane.data()), yuv.getFrame(i).uPlane.size());
-        out.write(reinterpret_cast<const char*>(yuv.getFrame(i).vPlane.data()), yuv.getFrame(i).vPlane.size());
+        outStream.write(reinterpret_cast<const char*>(yuv.getFrame(i).yPlane.data()), yuv.getFrame(i).yPlane.size());
+        outStream.write(reinterpret_cast<const char*>(yuv.getFrame(i).uPlane.data()), yuv.getFrame(i).uPlane.size());
+        outStream.write(reinterpret_cast<const char*>(yuv.getFrame(i).vPlane.data()), yuv.getFrame(i).vPlane.size());
     }
-
-    return true;
 }

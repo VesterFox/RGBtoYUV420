@@ -90,7 +90,6 @@ YUVFrame readYUVFrame(std::ifstream& fp, int YSize, int UVSize);
 /// <summary>
 /// Сохранение набора кадров в .yuv формате (дописывает в конец файла).
 /// </summary>
-/// <param name="outputFilename"> Имя выходного файла (включая расширение).</param>
+/// <param name="outStream"> Поток для записи файла с результатом работы. </param>
 /// <param name="yuv"> Циклический буфер содержащий кадры для записи. </param>
-/// <returns> True, если операция успешная, иначе False. </returns>
-bool saveYUVFrames(const std::string& outputFilename, YUVRingBuffer& yuv);
+void saveYUVFrames(std::ofstream& outStream, YUVRingBuffer& yuv);
