@@ -1,6 +1,7 @@
 ﻿#include "overlay.h"
+#include <thread>
 
-bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
+void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     int dstWidth, int dstHeight,
     int offsetX, int offsetY,
     int overlayWidth, int overlayHeight)
@@ -11,9 +12,7 @@ bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
 
     int endX = std::min(dstWidth, offsetX + overlayWidth);
     int endY = std::min(dstHeight, offsetY + overlayHeight);
-
-    if (startX >= endX || startY >= endY)
-        return false;
+    
 
     for (int y = startY; y < endY; ++y)
     {
@@ -58,38 +57,67 @@ bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
 
         std::memcpy(dstLine, srcLine, endXc - startXc);
     }
+}
 
-    return true;
+bool isBeyondBorders(int imageWidth, int imageHeight,
+    int videoWidth, int videoHeight, int xOffset, int yOffset)
+{
+    int startX = std::max(0, xOffset);
+    int startY = std::max(0, yOffset);
+
+    int endX = std::min(videoWidth, xOffset + imageWidth);
+    int endY = std::min(videoHeight, yOffset + imageHeight);
+
+    if (startX >= endX || startY >= endY)
+    {
+        std::cout << "Площадь изображения полностью за границами видео." << std::endl
+            << " Нет информации для вставки. Отмена операции вставки." << std::endl;
+        return true;
+    }
+    return false;
 }
 
 void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight, 
     int videoWidth, int videoHeight, int xOffset, int yOffset)
 {
+    if(isBeyondBorders(imageWidth, imageHeight, videoWidth, videoHeight, xOffset, yOffset)) return;
+
+    std::vector<std::thread> threads;
+
     for (int i = 0; i < frames.size(); i++)
     {
-        if (!overlayFrame(frames.getFrame(i), image, videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight))
-        {
-            std::cout << "Площадь изображения полностью за границами видео." << std::endl 
-                << " Нет информации для вставки. Отмена операции вставки." << std::endl;
-            break;
-        }
+        threads.emplace_back
+        (
+            overlayFrame, std::ref(frames.getFrame(i)), std::cref(image), videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight
+        );
+    }
+
+    for (auto& t : threads)
+    {
+        t.join();
     }
 }
 
 void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight,
     int videoWidth, int videoHeight)
 {
-    // Координаты наложения изображения по центру видео. 
     int xOffset = (int)floor((videoWidth - imageWidth) / 2);
     int yOffset = (int)floor((videoHeight - imageHeight) / 2);
 
+    if (isBeyondBorders(imageWidth, imageHeight, videoWidth, videoHeight, xOffset, yOffset)) return;
+
+    std::vector<std::thread> threads;
+
     for (int i = 0; i < frames.size(); i++)
     {
-        if (!overlayFrame(frames.getFrame(i), image, videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight))
-        {
-            std::cout << "Площадь изображения полностью за границами видео." << std::endl
-                << " Нет информации для вставки. Отмена операции вставки." << std::endl;
-            break;
-        }
+        threads.emplace_back
+        (
+            overlayFrame, std::ref(frames.getFrame(i)), std::cref(image), videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight
+        );
+    }
+
+    for (auto& t : threads)
+    {
+        t.join();
     }
 }

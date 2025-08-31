@@ -13,10 +13,9 @@
 /// <param name="offsetYpos"> Отступ наложения по вертикали в px. </param>
 /// <param name="overlayWidth"> Ширина накладываемого изображения. </param>
 /// <param name="overlayHeight"> Высота накладываемого изображения. </param>
-/// <returns> True, в случае успеха, иначе False. </returns>
-bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
+void overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     int dstWidth, int dstHeight,
-    int offsetX, int offsetYpos,
+    int offsetX, int offsetY,
     int overlayWidth, int overlayHeight);
 
 /// <summary>
