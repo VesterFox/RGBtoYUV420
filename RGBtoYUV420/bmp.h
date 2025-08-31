@@ -40,18 +40,20 @@ struct BMPInfoHeader
 /// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
 /// <param name="yuvResult"> Результат конвертации. </param>
+/// <param name="nThreads"> Доступное кол-во потоков. </param>
 /// <returns> True, в случае успеха, иначе False. </returns>
 bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
-    YUVFrame& yuvResult);
+    YUVFrame& yuvResult, unsigned int nThreads);
 
 /// <summary>
 /// Проверка входящего .bmp файла (через структуры полученные в результате  на удв. критериев конвертации. (Выводит ошибки через cerr).
 /// </summary>
 /// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
 /// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <param name="inputVideo"> Видео .yuv, на которое будет накладываться изображение. </param>
+/// <param name="videoWidth"> Ширина кадра видео. </param>
+/// <param name="videoHeight"> Высота кадра видео. </param>
 /// <returns> True, если BMP имеет корректные характеристики, иначе false. </returns>
-bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inputVideo);
+bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, int videoWidth, int videoHeight);
 
 /// <summary>
 /// Чтение BMP из потока и передача данных в <see cref="BMPHeader"> и <see cref="BMPInfoHeader">.
@@ -66,9 +68,12 @@ bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoH
 /// Чтение входного BMP и сбор необходимой информации о нём. Конвертация в YUV420.
 /// </summary>
 /// <param name="fileName"> Имя (путь) до файла, включая расширение. </param>
-/// <param name="inputVideo"> <see cref="YUVVideo"> структура видео YUV. </param>
 /// <param name="yuvFrame"> Кадр (изображение) YUV в формате структуры <see cref="YUVFrame">. Вывод результата конвертации. </param>
 /// <param name="imageWidth"> Полученная ширина разрешения изображения.</param>
 /// <param name="imageHeight"> Полученная высота разрешения изображения. </param>
+/// <param name="videoWidth"> Ширина разрешения видео.</param>
+/// <param name="videoHeight"> Высота разрешения видео. </param>
+/// <param name="nThreads"> Доступное кол-во потоков. </param>
 /// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
-bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight);
+bool prepareBMP(std::string fileName, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight, int videoWidth, int videoHeight,
+    unsigned int nThreads);

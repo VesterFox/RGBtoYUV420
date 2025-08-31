@@ -62,11 +62,12 @@ bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
     return true;
 }
 
-void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight, int xOffset, int yOffset)
+void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight, 
+    int videoWidth, int videoHeight, int xOffset, int yOffset)
 {
-    for (uint32_t i = 0; i < video.frameAmount; i++)
+    for (int i = 0; i < frames.size(); i++)
     {
-        if (!overlayFrame(video.frames[i], image, video.width, video.height, xOffset, yOffset, imageWidth, imageHeight))
+        if (!overlayFrame(frames.getFrame(i), image, videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight))
         {
             std::cout << "Площадь изображения полностью за границами видео." << std::endl 
                 << " Нет информации для вставки. Отмена операции вставки." << std::endl;
@@ -75,15 +76,16 @@ void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int 
     }
 }
 
-void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight)
+void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight,
+    int videoWidth, int videoHeight)
 {
     // Координаты наложения изображения по центру видео. 
-    int xOffset = floor((video.width - imageWidth) / 2);
-    int yOffset = floor((video.height - imageHeight) / 2);
+    int xOffset = (int)floor((videoWidth - imageWidth) / 2);
+    int yOffset = (int)floor((videoHeight - imageHeight) / 2);
 
-    for (uint32_t i = 0; i < video.frameAmount; i++)
+    for (int i = 0; i < frames.size(); i++)
     {
-        if (!overlayFrame(video.frames[i], image, video.width, video.height, xOffset, yOffset, imageWidth, imageHeight))
+        if (!overlayFrame(frames.getFrame(i), image, videoWidth, videoHeight, xOffset, yOffset, imageWidth, imageHeight))
         {
             std::cout << "Площадь изображения полностью за границами видео." << std::endl
                 << " Нет информации для вставки. Отмена операции вставки." << std::endl;

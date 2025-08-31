@@ -159,7 +159,7 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
 }
 
 bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
-    YUVFrame& yuvResult)
+    YUVFrame& yuvResult, unsigned int nThreads)
 {
     int width = infoHeader.width;
     int height = infoHeader.height;
@@ -172,7 +172,6 @@ bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfo
     std::vector<uint8_t> bmpData(row_size * height);
     file.read(reinterpret_cast<char*>(bmpData.data()), bmpData.size());
 
-    unsigned int nThreads = std::max(1u, std::thread::hardware_concurrency());
     int blockSize = height / nThreads;
 
     std::vector<std::thread> threads;
@@ -198,7 +197,7 @@ bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfo
     return true;
 }
 
-bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inputVideo)
+bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, int videoWidth, int videoHeight)
 {
     std::cout << "Входной BMP:" << std::endl;
     if (header.fileSize < 54)
@@ -231,11 +230,11 @@ bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, YUVVideo inp
         return false;
     }
 
-    if (infoHeader.width > inputVideo.width || infoHeader.height > inputVideo.height)
+    if (infoHeader.width > videoWidth || infoHeader.height > videoHeight)
     {
         std::cerr << "Размер должен быть <= размера видео. \n BMP размер:"
             + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) + " > видео "
-            + std::to_string(inputVideo.width) + "x" + std::to_string(inputVideo.height) << std::endl;
+            + std::to_string(videoWidth) + "x" + std::to_string(videoHeight) << std::endl;
         return false;
     }
 
@@ -259,7 +258,8 @@ bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoH
     return resultStatus;
 }
 
-bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight)
+bool prepareBMP(std::string fileName, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight, int videoWidth, int videoHeight, 
+    unsigned int nThreads)
 {
     std::ifstream inputBMPFile(fileName, std::ios::binary);
     if (!inputBMPFile) {
@@ -273,12 +273,12 @@ bool prepareBMP(std::string fileName, YUVVideo inputVideo, YUVFrame& yuvFrame, i
     readBMP(inputBMPFile, header, infoHeader);
 
     // Валидация BMP
-    if (!isCorrectInputFile(header, infoHeader, inputVideo)) return false;
+    if (!isCorrectInputFile(header, infoHeader, videoWidth, videoHeight)) return false;
 
     // Конвертация BMP
     inputBMPFile.seekg(header.offset, std::ios::beg);
 
-    if (!convertRGBtoYUV(inputBMPFile, header, infoHeader, yuvFrame))
+    if (!convertRGBtoYUV(inputBMPFile, header, infoHeader, yuvFrame, nThreads))
     {
         std::cerr << "Ошибка конвертации BMP в YUV." << std::endl;
         return false;

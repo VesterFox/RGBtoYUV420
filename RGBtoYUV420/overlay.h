@@ -23,18 +23,24 @@ bool overlayFrame(YUVFrame& dstFrame, const YUVFrame& overlayFrame,
 /// Наложить YUV420 изображение поверх YUV420 видео с свдигом.
 /// </summary>
 /// <param name="image"> Изображение, которое будет накладываться на видео. </param>
-/// <param name="video"> Видео, поверх которого будет накладываться изображение. </param>
+/// <param name="frames"> Кольцевой буфер содержащий кадры, поверх которых будет накладываться изображение. </param>
 /// <param name="imageWidth"> Ширина изображения в px. </param>
 /// <param name="imageHeight"> Высота изображения в px. </param>
+/// <param name="videoWidth"> Ширина изображения в px. </param>
+/// <param name="videoHeight"> Высота изображения в px. </param>
 /// <param name="xOffset"> Сдвиг по горизонтали в px.</param>
 /// <param name="yOffset"> Сдвиг по вертикали в px. </param>
-void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight, int xOffset, int yOffset);
+void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight,
+    int videoWidth, int videoHeight, int xOffset, int yOffset);
 
 /// <summary>
-/// Наложить YUV420 изображение поверх YUV420 видео по центру кадра.
+/// Наложить YUV420 изображение поверх YUV420 видео с свдигом.
 /// </summary>
 /// <param name="image"> Изображение, которое будет накладываться на видео. </param>
-/// <param name="video"> Видео, поверх которого будет накладываться изображение. </param>
+/// <param name="frames"> Кольцевой буфер содержащий кадры, поверх которых будет накладываться изображение. </param>
 /// <param name="imageWidth"> Ширина изображения в px. </param>
 /// <param name="imageHeight"> Высота изображения в px. </param>
-void overlayOnVideo(const YUVFrame& image, YUVVideo& video, int imageWidth, int imageHeight);
+/// <param name="videoWidth"> Ширина изображения в px. </param>
+/// <param name="videoHeight"> Высота изображения в px. </param>
+void overlayOnVideo(const YUVFrame& image, YUVRingBuffer& frames, int imageWidth, int imageHeight,
+    int videoWidth, int videoHeight);
