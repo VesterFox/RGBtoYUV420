@@ -1,4 +1,6 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.12)
+
+project ("RGBtoYUV420")
 
 # Включение горячей перезагрузки для компиляторов MSVC, если поддерживается.
 if (POLICY CMP0141)
@@ -6,10 +8,18 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("RGBtoYUV420")
-
 set(CMAKE_CXX_STANDARD 11)           
 set(CMAKE_CXX_STANDARD_REQUIRED ON)  
 set(CMAKE_CXX_EXTENSIONS OFF)        
 
-add_subdirectory ("RGBtoYUV420")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
+set(SOURCES
+	${SRC_DIR}/main.cpp
+	${SRC_DIR}/bmp.cpp
+	${SRC_DIR}/overlay.cpp
+	${SRC_DIR}/utils.cpp
+	${SRC_DIR}/yuv.cpp
+)
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
