@@ -1,14 +1,14 @@
 ﻿#include <string>
 #include <iostream>
-#include <fstream>  
+#include <fstream>
+#include <thread>
 
 #include "yuv.h"
 #include "bmp.h"
-#include "overlay.h"
 #include "utils.h"
 
-bool OverlayBMPonYUV(std::string inputYUVVideoFilename, std::string inputBMPFilename, std::string outputFilename,
-    int videoWidth, int videoHeight, int xOffset, int yOffset, bool placeInCenter)
+bool OverlayBMPonYUV(const std::string& inputYUVVideoFilename, const std::string& inputBMPFilename,
+    const std::string& outputFilename, int videoWidth, int videoHeight, int xOffset, int yOffset, bool placeInCenter)
 {
     // Чтение входного видео и сбор необходимой информации о нём
     std::ifstream inputYUVFile(inputYUVVideoFilename, std::ios::binary);
@@ -29,9 +29,12 @@ bool OverlayBMPonYUV(std::string inputYUVVideoFilename, std::string inputBMPFile
     unsigned int nThreads = std::max(1u, std::thread::hardware_concurrency());
 
     // Чтение входного BMP и сбор необходимой информации о нём. Конвертация в YUV420
-    YUVFrame overlayYUV;
-    int imageWidth, imageHeight;
-    if (!prepareBMP(inputBMPFilename, overlayYUV, imageWidth, imageHeight, videoWidth, videoHeight, nThreads)) return EXIT_FAILURE;
+    BMPImage bmpImage(inputBMPFilename);
+
+    if (!bmpImage.isValidForVideo(videoWidth, videoHeight)) return false;
+
+    YUVFrame overlayYUV(bmpImage.getWidth(), bmpImage.getHeight());
+    overlayYUV = bmpImage.toYUV(nThreads);
 
     // Наложение и запись результата через кольцевой буффер
     YUVRingBuffer videoFrameBuffer(nThreads, videoWidth, videoHeight);
@@ -53,16 +56,16 @@ bool OverlayBMPonYUV(std::string inputYUVVideoFilename, std::string inputBMPFile
         for (int i = 0; i < frameAmountInBuffer; i++)
         {
             auto& frame = videoFrameBuffer.nextFrame();
-            frame = readYUVFrame(inputYUVFile, y_size, uv_size);
+            frame.readFromFile(inputYUVFile, y_size, uv_size);
         }
 
         // Вызов наложения картинки на видео (по центру или с сдвигом от левого верхнего угла)
         if (placeInCenter)
-            overlayOnVideo(overlayYUV, videoFrameBuffer, imageWidth, imageHeight, videoWidth, videoHeight);
+            overlayYUV.overlayOnVideo(videoFrameBuffer);
         else
-            overlayOnVideo(overlayYUV, videoFrameBuffer, imageWidth, imageHeight, videoWidth, videoHeight, xOffset, yOffset);
+            overlayYUV.overlayOnVideo(videoFrameBuffer, xOffset, yOffset);
 
-        saveYUVFrames(outStream, videoFrameBuffer);
+        videoFrameBuffer.saveToFile(outStream);
 
         remains -= frameAmountInBuffer;
 
@@ -82,7 +85,7 @@ int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
 
-    if ((argc < 5 && argc > 6) || argv[1] == "--help")
+    if ((argc < 5 || argc > 6) || (argc > 1 && std::string(argv[1]) == "--help"))
         printHelp();
 
     std::string inputBMPFilename = argv[1];

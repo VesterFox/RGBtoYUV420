@@ -1,22 +1,71 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <vector>
 #include <fstream>
 
-struct YUVFrame
+class YUVRingBuffer;
+
+class YUVFrame
 {
-    std::vector<uint8_t> yPlane;
-    std::vector<uint8_t> uPlane;
-    std::vector<uint8_t> vPlane;
-
-    YUVFrame() = default;
-
-    YUVFrame(int width, int height)
+public:
+    YUVFrame(int width, int height): width_(width), height_(height)
     {
         yPlane.resize(width * height);
         uPlane.resize((width / 2) * (height / 2));
         vPlane.resize((width / 2) * (height / 2));
     }
+
+    std::vector<uint8_t> yPlane;
+    std::vector<uint8_t> uPlane;
+    std::vector<uint8_t> vPlane;
+
+    int getWidth() const { return width_; }
+
+    int getHeight() const { return height_; }
+
+    /// <summary>
+    /// Чтение YUV кадра из ifstream и запись в структуру YUVFrame.
+    /// </summary>
+    /// <param name="fp"> Поток с информацией из .yuv видео файла.</param>
+    /// <param name="YSize"> Размер вектора хранящего Y плоскость. </param>
+    /// <param name="UVSize"> Размер векторов хранящих UV плоскости. </param>
+    /// <returns> 1 кадр <see cref="YUVFrame"> из входного видео. </returns>
+    void readFromFile(std::ifstream& fp, int YSize, int UVSize);
+
+    /// <summary>
+    /// Наложить YUV420 изображение поверх YUV420 видео с сдвигом.
+    /// </summary>
+    /// <param name="frames"> Кольцевой буфер содержащий кадры, поверх которых будет накладываться изображение. </param>
+    /// <param name="xOffset"> Сдвиг по горизонтали в px.</param>
+    /// <param name="yOffset"> Сдвиг по вертикали в px. </param>
+    void overlayOnVideo(YUVRingBuffer& frames, int xOffset, int yOffset);
+
+    /// <summary>
+    /// Наложить YUV420 изображение поверх YUV420 видео с сдвигом.
+    /// </summary>
+    /// <param name="frames"> Кольцевой буфер содержащий кадры, поверх которых будет накладываться изображение. </param>
+    void overlayOnVideo(YUVRingBuffer& frames);
+
+    /// <summary>
+    /// Наложение этого YUV4:2:0 изображения на другое.
+    /// </summary>
+    /// <param name="dstFrame"> Кадр на который будет накладываться изображение.</param>
+    /// <param name="xOffset"> Отступ наложения по горизонтали в px. </param>
+    /// <param name="yOffset"> Отступ наложения по вертикали в px. </param>
+    void overlayOnFrame(YUVFrame& dstFrame, int xOffset, int yOffset);
+
+    /// <summary>
+    /// Проверяет, находится ли это изображение за пределами <see cref="YUVRingBuffer"/>, учитывая offset.
+    /// </summary>
+    /// <param name="video"> Видео, границы которого учитываются при проверке. </param>
+    /// <param name="xOffset"> Отступ наложения по горизонтали в px. </param>
+    /// <param name="yOffset"> Отступ наложения по вертикали в px. </param>
+    /// <returns> True, если данное изображение полностью за пределами видео. </returns>
+    bool isBeyondBorders(const YUVRingBuffer& video, int xOffset, int yOffset);
+
+private:
+    int width_, height_;
 };
 
 class YUVRingBuffer
@@ -58,6 +107,10 @@ public:
         return buffer_[realIndex];
     }
 
+    int getWidth() const { return width_; }
+
+    int getHeight() const { return height_; }
+
     /// <summary>
     /// Возвращает объем буффера в кадрах.
     /// </summary>
@@ -70,6 +123,12 @@ public:
     /// <returns> Текущее кол-во доступных для записи кадров. </returns>
     int capacity() const { return capacity_; }
 
+    /// <summary>
+    /// Сохранение набора кадров в .yuv формате (дописывает в конец файла).
+    /// </summary>
+    /// <param name="outStream"> Поток для записи файла с результатом работы. </param>
+    void saveToFile(std::ofstream& outStream);
+
 private:
     int capacity_;
     int width_, height_;
@@ -77,19 +136,3 @@ private:
     int writeIndex_;
     int size_;
 };
-
-/// <summary>
-/// Чтение YUV кадра из ifstream и запись в структуру YUVFrame.
-/// </summary>
-/// <param name="fp"> Поток с информацией из .yuv видео файла.</param>
-/// <param name="YSize"> Размер вектора хранящего Y плоскость. </param>
-/// <param name="UVSize"> Размер векторов хранящих UV плоскости. </param>
-/// <returns> 1 кадр <see cref="YUVFrame"> из входного видео. </returns>
-YUVFrame readYUVFrame(std::ifstream& fp, int YSize, int UVSize); 
-
-/// <summary>
-/// Сохранение набора кадров в .yuv формате (дописывает в конец файла).
-/// </summary>
-/// <param name="outStream"> Поток для записи файла с результатом работы. </param>
-/// <param name="yuv"> Циклический буфер содержащий кадры для записи. </param>
-void saveYUVFrames(std::ofstream& outStream, YUVRingBuffer& yuv);

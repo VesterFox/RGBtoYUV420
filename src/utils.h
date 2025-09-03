@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -14,14 +16,20 @@
 /// <param name="size"> Количество байт для чтения из файла. </param>
 /// <returns> True в случае успеха, иначе False. </returns>
 template <typename Type>
-bool read(std::ifstream& fp, Type& result, std::size_t size)
+void read(std::ifstream& fp, Type& result, std::size_t size, const std::string& what = "")
 {
-    if (!fp.read(reinterpret_cast<char*>(&result), size))
+    fp.read(reinterpret_cast<char*>(&result), size);
+    std::streamsize bytesRead = fp.gcount();
+
+    if (bytesRead != static_cast<std::streamsize>(size))
     {
-        std::cerr << "Ошибка чтения файла." << std::endl;
-        return false;
+        std::string sysErr = std::strerror(errno);
+        throw std::runtime_error(
+            "Ошибка чтения " + what +":" + sysErr +
+            ". Ожидалось " + std::to_string(size) +
+            " байт, прочитано: " + std::to_string(bytesRead) + "."
+        );
     }
-    return true;
 };
 
 /// <summary>

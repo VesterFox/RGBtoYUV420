@@ -1,79 +1,81 @@
 ﻿#pragma once
 
 #include <cstdint>
-#include <fstream>
 #include <string>
-#include <iostream>
-#include <thread>
-#include <algorithm>
 
 #include "yuv.h"
 
-struct BMPHeader
+class BMPImage
 {
-    uint16_t fileType{};
-    uint32_t fileSize{};
-    uint16_t reserved0{};
-    uint16_t reserved1{};
-    uint32_t offset{};
+public:
+    BMPImage(const std::string& filename)
+    {
+        load(filename);
+    };
+
+    /// <summary>
+    ///  Проверка входящего .bmp файла на удв. критериев конвертации.
+    /// </summary>
+    /// <param name="videoWidth"> Ширина кадра видео. </param>
+    /// <param name="videoHeight"> Высота кадра видео. </param>
+    /// <returns></returns>
+    bool isValidForVideo(int videoWidth, int videoHeight) const;
+
+    /// <summary>
+    /// Чтение BMP из потока и передача данных в <see cref="BMPHeader"> и <see cref="BMPInfoHeader">.
+    /// </summary>
+    /// <param name="filename"> Адрес до .bmp файла. </param>
+    void load(const std::string& filename);
+
+    /// <summary>
+    /// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr). Используется SSE2.
+    /// </summary>
+    /// <param name="nThreads"> Доступное кол-во потоков.  </param>
+    /// <returns></returns>
+    YUVFrame toYUV(unsigned int nThreads) const;
+
+    int getWidth() const { return width_; }
+    int getHeight() const { return height_; }
+
+    std::vector<uint8_t> imageData{};
+private:
+    #pragma pack(push, 1)
+    struct BMPHeader
+    {
+        uint16_t fileType{};
+        uint32_t fileSize{};
+        uint16_t reserved0{};
+        uint16_t reserved1{};
+        uint32_t offset{};
+    } header;
+    #pragma pack(pop)
+
+    #pragma pack(push, 1)
+    struct BMPInfoHeader
+    {
+        uint32_t size{};
+        int32_t width{};
+        int32_t height{};
+        uint16_t planes{};
+        uint16_t bitCount{};
+        uint32_t compression{};
+        uint32_t imageSize{};
+        int32_t xPixelsPerMeter{};
+        int32_t yPixelsPerMeter{};
+        uint32_t colorsUsed{};
+        uint32_t colorsImportant{};
+    } info;
+    #pragma pack(pop)
+
+    int width_ = 0;
+    int height_ = 0;
+    int rowSize_ = 0;
+
+    /// <summary>
+    /// Конвертация сегмента .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr). Используется SSE2.
+    /// </summary>
+    /// <param name="startY"> Строка с которой начинается обработка текущего блока. </param>
+    /// <param name="endY"> Строка на которой заканчивается обработка текущего блока. </param>
+    /// <param name="yuvResult"> <see cref="YUVFrame"> структура кадра, в которую записывается конвертированный блок. </param>
+    inline void convertRGBtoYUVBlock(int startY, int endY, YUVFrame& yuvResult) const;
 };
-
-struct BMPInfoHeader
-{
-    uint32_t size{};
-    int32_t width{};
-    int32_t height{};
-    uint16_t planes{};
-    uint16_t bitCount{};
-    uint32_t compression{};
-    uint32_t imageSize{};
-    int32_t xPixelsPerMeter{};
-    int32_t yPixelsPerMeter{};
-    uint32_t colorsUsed{};
-    uint32_t colorsImportant{};
-};
-
-/// <summary>
-/// Многопоточная конвертация .bmp в пространстве RGB в YUV4:2:0 (BT.601 YCbCr). Используется SSE2.
-/// </summary>
-/// <param name="file"> Поток с данными входного файла. </param>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
-/// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <param name="yuvResult"> Результат конвертации. </param>
-/// <param name="nThreads"> Доступное кол-во потоков. </param>
-/// <returns> True, в случае успеха, иначе False. </returns>
-bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
-    YUVFrame& yuvResult, unsigned int nThreads);
-
-/// <summary>
-/// Проверка входящего .bmp файла (через структуры полученные в результате  на удв. критериев конвертации. (Выводит ошибки через cerr).
-/// </summary>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
-/// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <param name="videoWidth"> Ширина кадра видео. </param>
-/// <param name="videoHeight"> Высота кадра видео. </param>
-/// <returns> True, если BMP имеет корректные характеристики, иначе false. </returns>
-bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, int videoWidth, int videoHeight);
-
-/// <summary>
-/// Чтение BMP из потока и передача данных в <see cref="BMPHeader"> и <see cref="BMPInfoHeader">.
-/// </summary>
-/// <param name="inputStream"> Поток с данными из входного .bmp файла. </param>
-/// <param name="header"> Заголовок Bitmap файла (<see cref="BMPHeader">). </param>
-/// <param name="infoHeader"> BitmapInfoHeader (<see cref="BMPInfoHeader">). </param>
-/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
-bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader);
-
-/// <summary>
-/// Чтение входного BMP и сбор необходимой информации о нём. Конвертация в YUV420.
-/// </summary>
-/// <param name="fileName"> Имя (путь) до файла, включая расширение. </param>
-/// <param name="yuvFrame"> Кадр (изображение) YUV в формате структуры <see cref="YUVFrame">. Вывод результата конвертации. </param>
-/// <param name="imageWidth"> Полученная ширина разрешения изображения.</param>
-/// <param name="imageHeight"> Полученная высота разрешения изображения. </param>
-/// <param name="videoWidth"> Ширина разрешения видео.</param>
-/// <param name="videoHeight"> Высота разрешения видео. </param>
-/// <param name="nThreads"> Доступное кол-во потоков. </param>
-/// <returns> True, если операция успешна, иначе False. Выводит сообщения о ошибке и ходе операции. </returns>
-bool prepareBMP(std::string fileName, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight, int videoWidth, int videoHeight,
-    unsigned int nThreads);

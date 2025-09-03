@@ -1,7 +1,10 @@
 # IO
 /input/*
 /out/*
+
+# IDE
 /.vs/*
+/.idea/*
 
 # Prerequisites
 *.d

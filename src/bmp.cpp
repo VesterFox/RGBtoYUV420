@@ -2,9 +2,58 @@
 #include "yuv.h"
 #include "utils.h"
 #include <immintrin.h>
+#include <thread>
 
-inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY, int endY,
-    int width, int height, int row_size, YUVFrame& yuvResult)
+bool BMPImage::isValidForVideo(int videoWidth, int videoHeight) const
+{
+    std::cout << "Входной BMP:" << std::endl;
+    if (header.fileSize < 54)
+    {
+        std::cerr << "Некорректный размер: " + std::to_string(header.fileSize) + "< 54." << std::endl;
+        return false;
+    }
+
+    if (header.fileType != 0x4D42)
+    {
+        std::cerr << "Некорретный тип в заголовке: " + std::to_string(header.fileType) << std::endl;
+        return false;
+    }
+
+    if (info.bitCount != 24)
+    {
+        std::cerr << "Некорректный bpp: " + std::to_string(info.bitCount) << std::endl;
+        return false;
+    }
+
+    if (info.compression != 0 && info.compression != 11)
+    {
+        std::cerr << "Некорректное сжатие: id = " + std::to_string(info.compression) << std::endl;
+        return false;
+    }
+
+    if (info.colorsUsed != 0)
+    {
+        std::cerr << "Некорректная палитра: " + std::to_string(info.colorsUsed) + " цветов." << std::endl;
+        return false;
+    }
+
+    if (width_ > videoWidth || height_ > videoHeight)
+    {
+        std::cerr << "Размер должен быть <= размера видео. \n BMP размер:"
+            + std::to_string(width_) + "x" + std::to_string(height_) + " > видео "
+            + std::to_string(videoWidth) + "x" + std::to_string(videoHeight) << std::endl;
+        return false;
+    }
+
+    std::cout << std::to_string(info.bitCount) + " бит/пкс. "
+        << "Сжатие: " + std::to_string(info.compression) << ". "
+        << "Палитра: " + std::to_string(info.colorsUsed) << ". "
+        << "Размер: " + std::to_string(info.width) + "x" + std::to_string(info.height) << std::endl;
+
+    return true;
+}
+
+inline void BMPImage::convertRGBtoYUVBlock(int startY, int endY, YUVFrame& yuvResult) const
 {
     // BT.601
     const __m128 YR = _mm_set1_ps(0.299f);
@@ -26,12 +75,12 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
     // Y шаг 4
     for (int y = startY; y < endY; ++y)
     {
-        const int rowNumberInBMP = height - 1 - y;
-        const uint8_t* rowData = bmpData.data() + rowNumberInBMP * row_size;
-        uint8_t* dstY = yuvResult.yPlane.data() + y * width;
+        const int rowNumberInBMP = height_ - 1 - y;
+        const uint8_t* rowData = imageData.data() + rowNumberInBMP * rowSize_;
+        uint8_t* dstY = yuvResult.yPlane.data() + y * width_;
 
         int x = 0;
-        for (; x + 4 <= width; x += 4)
+        for (; x + 4 <= width_; x += 4)
         {
             float Rf[4], Gf[4], Bf[4];
             // RGB24: B,G,R по 3 байта на пиксель
@@ -58,16 +107,16 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
         }
 
         // Хвост
-        for (; x < width; ++x)
+        for (; x < width_; ++x)
         {
             const uint8_t B = rowData[x * 3 + 0];
             const uint8_t G = rowData[x * 3 + 1];
             const uint8_t R = rowData[x * 3 + 2];
 
             int Y = int(0.299f * R + 0.587f * G + 0.114f * B + 0.5f);
-            if (Y < 0) 
-                Y = 0; 
-            else if (Y > 255) 
+            if (Y < 0)
+                Y = 0;
+            else if (Y > 255)
                 Y = 255;
             dstY[x] = static_cast<uint8_t>(Y);
         }
@@ -77,16 +126,16 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
     int yUVStart = (startY + 1) & ~1; // Ближайшая чётная >= startY
     for (int y = yUVStart; y < endY; y += 2)
     {
-        const int bmpRow = height - 1 - y;
-        const uint8_t* row = bmpData.data() + bmpRow * row_size;
+        const int bmpRow = height_ - 1 - y;
+        const uint8_t* row = imageData.data() + bmpRow * rowSize_;
 
         int x = 0;
         // обрабатываем 8 «кандидатов» подряд, но записываем каждый второй (x, x+2, x+4, x+6)
-        for (; x + 8 <= width; x += 8)
+        for (; x + 8 <= width_; x += 8)
         {
             float Rf[8], Gf[8], Bf[8];
-            #pragma unroll
-            for (int i = 0; i < 8; ++i) 
+#pragma unroll
+            for (int i = 0; i < 8; ++i)
             {
                 Bf[i] = row[(x + i) * 3 + 0];
                 Gf[i] = row[(x + i) * 3 + 1];
@@ -117,7 +166,7 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
             _mm_store_ps(Vtmp + 4, V2);
 
             // Индекс в UV (каждый второй пиксель)
-            int uvIndex = (y / 2) * (width / 2) + (x / 2);
+            int uvIndex = (y / 2) * (width_ / 2) + (x / 2);
 
             // Пишем элементы 0,2,4,6 -> 4 значения U/V
             yuvResult.uPlane[uvIndex + 0] = static_cast<uint8_t>(Utmp[0] + 0.5f);
@@ -132,7 +181,7 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
         }
 
         // Хвост
-        for (; x + 1 < width; x += 2)
+        for (; x + 1 < width_; x += 2)
         {
             const uint8_t B = row[x * 3 + 0];
             const uint8_t G = row[x * 3 + 1];
@@ -141,155 +190,68 @@ inline void convertRGBtoYUVBlock(const std::vector<uint8_t>& bmpData, int startY
             int U = int(-0.169f * R - 0.331f * G + 0.500f * B + 128.5f);
             int V = int(0.500f * R - 0.419f * G - 0.081f * B + 128.5f);
 
-            if (U < 0) 
-                U = 0; 
-            else if (U > 255) 
+            if (U < 0)
+                U = 0;
+            else if (U > 255)
                 U = 255;
 
-            if (V < 0) 
-                V = 0; 
-            else if (V > 255) 
+            if (V < 0)
+                V = 0;
+            else if (V > 255)
                 V = 255;
 
-            const int uvIndex = (y / 2) * (width / 2) + (x / 2);
+            const int uvIndex = (y / 2) * (width_ / 2) + (x / 2);
             yuvResult.uPlane[uvIndex] = static_cast<uint8_t>(U);
             yuvResult.vPlane[uvIndex] = static_cast<uint8_t>(V);
         }
     }
 }
 
-bool convertRGBtoYUV(std::ifstream& file, const BMPHeader& header, const BMPInfoHeader& infoHeader,
-    YUVFrame& yuvResult, unsigned int nThreads)
+void BMPImage::load(const std::string& filename)
 {
-    int width = infoHeader.width;
-    int height = infoHeader.height;
-    int row_size = ((width * 3 + 3) / 4) * 4;
+    std::ifstream inputBMPFile(filename, std::ios::binary);
+    if (!inputBMPFile)
+    {
+        throw std::runtime_error("Ошибка чтения файла: " + filename);
+    }
 
-    yuvResult.yPlane.resize(width * height);
-    yuvResult.uPlane.resize((width / 2) * (height / 2));
-    yuvResult.vPlane.resize((width / 2) * (height / 2));
+    read(inputBMPFile, header, sizeof(header));
+    read(inputBMPFile, info, sizeof(info));
 
-    std::vector<uint8_t> bmpData(row_size * height);
-    file.read(reinterpret_cast<char*>(bmpData.data()), bmpData.size());
+    width_ = info.width;
+    height_ = info.height;
 
-    int blockSize = height / nThreads;
+    inputBMPFile.seekg(header.offset, std::ios::beg);
+    rowSize_ = ((width_ * 3 + 3) / 4) * 4;
+    imageData.resize(rowSize_ * height_);
+    inputBMPFile.read(reinterpret_cast<char*>(imageData.data()), imageData.size());
+}
+
+YUVFrame BMPImage::toYUV(unsigned int nThreads) const
+{
+    YUVFrame result(width_, height_);
+
+    int blockSize = height_ / nThreads;
 
     std::vector<std::thread> threads;
     int startY = 0;
 
-    for(unsigned int i = 0; i < nThreads; ++i)
+    for (unsigned int i = 0; i < nThreads; ++i)
     {
-        int endY = (i == nThreads - 1) ? height : startY + blockSize;
+        int endY = (i == nThreads - 1) ? height_ : startY + blockSize;
 
         threads.emplace_back
         (
-            convertRGBtoYUVBlock, std::cref(bmpData), startY, endY, width, height, row_size, std::ref(yuvResult)
+            &BMPImage::convertRGBtoYUVBlock, this, startY, endY, std::ref(result)
         );
 
         startY = endY;
     }
 
-    for(auto& t : threads)
+    for (auto& t : threads)
     {
         t.join();
     }
 
-    return true;
-}
-
-bool isCorrectInputFile(BMPHeader header, BMPInfoHeader infoHeader, int videoWidth, int videoHeight)
-{
-    std::cout << "Входной BMP:" << std::endl;
-    if (header.fileSize < 54)
-    {
-        std::cerr << "Некорректный размер: " + std::to_string(header.fileSize) + "< 54." << std::endl;
-        return false;
-    }
-
-    if (header.fileType != 0x4D42)
-    {
-        std::cerr << "Некорретный тип в заголовке: " + std::to_string(header.fileType) << std::endl;
-        return false;
-    }
-
-    if (infoHeader.bitCount != 24)
-    {
-        std::cerr << "Некорректный bpp: " + std::to_string(infoHeader.bitCount) << std::endl;
-        return false;
-    }
-
-    if (infoHeader.compression != 0 && infoHeader.compression != 11)
-    {
-        std::cerr << "Некорректное сжатие: id = " + std::to_string(infoHeader.compression) << std::endl;
-        return false;
-    }
-
-    if (infoHeader.colorsUsed != 0)
-    {
-        std::cerr << "Некорректная палитра: " + std::to_string(infoHeader.colorsUsed) + " цветов." << std::endl;
-        return false;
-    }
-
-    if (infoHeader.width > videoWidth || infoHeader.height > videoHeight)
-    {
-        std::cerr << "Размер должен быть <= размера видео. \n BMP размер:"
-            + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) + " > видео "
-            + std::to_string(videoWidth) + "x" + std::to_string(videoHeight) << std::endl;
-        return false;
-    }
-
-    std::cout << std::to_string(infoHeader.bitCount) + " бит/пкс. "
-        << "Сжатие: " + std::to_string(infoHeader.compression) << ". "
-        << "Палитра: " + std::to_string(infoHeader.colorsUsed) << ". "
-        << "Размер: " + std::to_string(infoHeader.width) + "x" + std::to_string(infoHeader.height) << std::endl;
-
-    return true;
-}
-
-bool readBMP(std::ifstream& inputStream, BMPHeader& header, BMPInfoHeader& infoHeader)
-{
-    bool resultStatus = true;
-    resultStatus = read(inputStream, header.fileType, sizeof(header.fileType));
-    resultStatus = read(inputStream, header.fileSize, sizeof(header.fileSize));
-    resultStatus = read(inputStream, header.reserved0, sizeof(header.reserved0));
-    resultStatus = read(inputStream, header.reserved1, sizeof(header.reserved1));
-    resultStatus = read(inputStream, header.offset, sizeof(header.offset));
-    resultStatus = read(inputStream, infoHeader, sizeof(infoHeader));
-    return resultStatus;
-}
-
-bool prepareBMP(std::string fileName, YUVFrame& yuvFrame, int& imageWidth, int& imageHeight, int videoWidth, int videoHeight, 
-    unsigned int nThreads)
-{
-    std::ifstream inputBMPFile(fileName, std::ios::binary);
-    if (!inputBMPFile) {
-        std::cerr << "Ошибка чтения файла." << std::endl;
-        return false;
-    }
-
-    // Чтение BMP
-    BMPHeader header;
-    BMPInfoHeader infoHeader;
-    readBMP(inputBMPFile, header, infoHeader);
-
-    // Валидация BMP
-    if (!isCorrectInputFile(header, infoHeader, videoWidth, videoHeight)) return false;
-
-    // Конвертация BMP
-    inputBMPFile.seekg(header.offset, std::ios::beg);
-
-    if (!convertRGBtoYUV(inputBMPFile, header, infoHeader, yuvFrame, nThreads))
-    {
-        std::cerr << "Ошибка конвертации BMP в YUV." << std::endl;
-        return false;
-    }
-    else
-    {
-        std::cout << "Конвертация кадра завершена." << std::endl;
-    }
-
-    imageWidth = infoHeader.width;
-    imageHeight = infoHeader.height;
-
-    return true;
+    return result;
 }

@@ -16,7 +16,6 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SOURCES
 	${SRC_DIR}/main.cpp
 	${SRC_DIR}/bmp.cpp
-	${SRC_DIR}/overlay.cpp
 	${SRC_DIR}/utils.cpp
 	${SRC_DIR}/yuv.cpp
 )
