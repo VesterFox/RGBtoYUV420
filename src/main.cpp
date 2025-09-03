@@ -73,7 +73,7 @@ bool OverlayBMPonYUV(const std::string& inputYUVVideoFilename, const std::string
         if(firstPass)
         {
             firstPass = false;
-            if(!ReopenOfstreamForApp(outStream, outputFilename)) return false;
+            if(!utils::ReopenOfstreamForApp(outStream, outputFilename)) return false;
         }
     }
 
@@ -85,25 +85,34 @@ int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
 
-    if ((argc < 5 || argc > 6) || (argc > 1 && std::string(argv[1]) == "--help"))
-        printHelp();
+    if (argc < 5 || argc > 6)
+    {
+        utils::printHelp();
+        return EXIT_FAILURE;
+    }
+
+    if (argc > 1 && std::string(argv[1]) == "--help")
+    {
+        utils::printHelp();
+        return EXIT_FAILURE;
+    }
 
     std::string inputBMPFilename = argv[1];
     std::string inputYUVVideoFilename = argv[2];
     std::string outputFilename = argv[3];
 
-    int videoWidth, videoHeight = 0;
-    if (!setVideoResolution(argv[4], videoWidth, videoHeight)) 
+    int videoWidth = 0, videoHeight = 0;
+    if (!utils::setVideoResolution(argv[4], videoWidth, videoHeight))
     {
-        printHelp();
+        utils::printHelp();
         return EXIT_FAILURE;
     }
 
-    int xOffset, yOffset = 0;
+    int xOffset = 0, yOffset = 0;
     bool placeInCenter = false;
-    if(!setOffset(argv[5], argv[6], xOffset, yOffset, placeInCenter))
+    if(!utils::setOffset(argv[5], argv[6], xOffset, yOffset, placeInCenter))
     {
-        printHelp();
+        utils::printHelp();
         return EXIT_FAILURE;
     }
 

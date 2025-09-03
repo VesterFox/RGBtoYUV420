@@ -215,8 +215,8 @@ void BMPImage::load(const std::string& filename)
         throw std::runtime_error("Ошибка чтения файла: " + filename);
     }
 
-    read(inputBMPFile, header, sizeof(header));
-    read(inputBMPFile, info, sizeof(info));
+    file_utils::read(inputBMPFile, header, sizeof(header));
+    file_utils::read(inputBMPFile, info, sizeof(info));
 
     width_ = info.width;
     height_ = info.height;

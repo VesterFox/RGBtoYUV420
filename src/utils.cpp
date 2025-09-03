@@ -1,6 +1,6 @@
 ﻿#include "utils.h"
 
-bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter)
+bool utils::setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter)
 {
     std::string firstArgument = offsetXArg;
     if (firstArgument == "center") placeInCenter = true;
@@ -25,7 +25,7 @@ bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, b
     return true;
 }
 
-bool setVideoResolution(char* argvStandatdId, int& width, int& height)
+bool utils::setVideoResolution(char* argvStandatdId, int& width, int& height)
 {
     int standardId = 0;
     try
@@ -43,20 +43,20 @@ bool setVideoResolution(char* argvStandatdId, int& width, int& height)
         return false;
     }
 
-    if (standardId < 0 || standardId > standardResolutions.size() - 1)
+    if (standardId < 0 || standardId > utils::standardResolutions.size() - 1)
     {
         std::cerr << "Некорректное значение номера стандарта видео. Используйте значение из списка." << std::endl;
         return false;
     }
 
-    width = standardResolutions[standardId].width;
-    height = standardResolutions[standardId].height;
+    width = utils::standardResolutions[standardId].width;
+    height = utils::standardResolutions[standardId].height;
     std::cout << "Выбрано разрешение видео: " << width << "x" << height << std::endl;
 
     return true;
 };
 
-bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename)
+bool utils::ReopenOfstreamForApp(std::ofstream& outStream, std::string filename)
 {
     outStream.close();
     outStream.open(filename, std::ios::binary | std::ios::app);
@@ -68,7 +68,7 @@ bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename)
     return true;
 }
 
-void printHelp()
+void utils::printHelp()
 {
     std::cout << "Выполняет наложение BMP (RGB 24 bit/px без альфы, палитры и компрессии) на YUV420 видеоряд с преобразованием." << std::endl
         << "Использование: имя входного .bmp, имя входного видео .yuv, имя выходного файла .yuv,"
@@ -77,7 +77,7 @@ void printHelp()
         << "Имена файлов необходимого указывать с расширением." << std::endl
         << "Поддерживаемые стандарты видео:" << std::endl;
     int id = 0;
-    for (auto it = standardResolutions.begin(); it != standardResolutions.end(); ++it)
+    for (auto it = utils::standardResolutions.begin(); it != utils::standardResolutions.end(); ++it)
     {
         std::cout << id++ << " - " << it->title << " " << it->width << "x" << it->height << "." << std::endl;
     }

@@ -7,81 +7,87 @@
 #include <iostream>
 #include <stdexcept>
 
-/// <summary>
-/// Читает указанное количество байт из бинарного файла в переменную указанного типа.
-/// </summary>
-/// <typeparam name="Type"> Тип переменной, в которую будут загружены данные. </typeparam>
-/// <param name="fp"> Входной файловый поток, открытый в бинарном режиме. </param>
-/// <param name="result"> Переменная, в которую будут прочитаны данные. </param>
-/// <param name="size"> Количество байт для чтения из файла. </param>
-/// <returns> True в случае успеха, иначе False. </returns>
-template <typename Type>
-void read(std::ifstream& fp, Type& result, std::size_t size, const std::string& what = "")
+namespace file_utils
 {
-    fp.read(reinterpret_cast<char*>(&result), size);
-    std::streamsize bytesRead = fp.gcount();
-
-    if (bytesRead != static_cast<std::streamsize>(size))
+    /// <summary>
+    /// Читает указанное количество байт из бинарного файла в переменную указанного типа.
+    /// </summary>
+    /// <typeparam name="Type"> Тип переменной, в которую будут загружены данные. </typeparam>
+    /// <param name="fp"> Входной файловый поток, открытый в бинарном режиме. </param>
+    /// <param name="result"> Переменная, в которую будут прочитаны данные. </param>
+    /// <param name="size"> Количество байт для чтения из файла. </param>
+    /// <returns> True в случае успеха, иначе False. </returns>
+    template <typename Type>
+    void read(std::ifstream& fp, Type& result, std::size_t size, const std::string& what = "")
     {
-        std::string sysErr = std::strerror(errno);
-        throw std::runtime_error(
-            "Ошибка чтения " + what +":" + sysErr +
-            ". Ожидалось " + std::to_string(size) +
-            " байт, прочитано: " + std::to_string(bytesRead) + "."
-        );
-    }
-};
+        fp.read(reinterpret_cast<char*>(&result), size);
+        std::streamsize bytesRead = fp.gcount();
 
-/// <summary>
-/// Пара названия стандарта видео и его разрешения.
-/// </summary>
-struct VideoResolution
+        if (bytesRead != static_cast<std::streamsize>(size))
+        {
+            std::string sysErr = std::strerror(errno);
+            throw std::runtime_error(
+                "Ошибка чтения " + what +":" + sysErr +
+                ". Ожидалось " + std::to_string(size) +
+                " байт, прочитано: " + std::to_string(bytesRead) + "."
+            );
+        }
+    };
+}
+
+namespace utils
 {
-    std::string title;
-    int width;
-    int height;
-};
+    /// <summary>
+    /// Пара названия стандарта видео и его разрешения.
+    /// </summary>
+    struct VideoResolution
+    {
+        std::string title;
+        int width;
+        int height;
+    };
 
-/// <summary>
-/// Пары поддерживаемых стандартов видео и значений их разрешений.
-/// </summary>
-const std::vector<VideoResolution> standardResolutions =
-{
-    {"CIF_PAL", 352, 288},
-    {"CIF_NTSC", 352, 240},
-    {"QCIF_PAL", 176, 144},
-    {"QCIF_NTSC", 176, 120}
-};
+    /// <summary>
+    /// Пары поддерживаемых стандартов видео и значений их разрешений.
+    /// </summary>
+    const std::vector<VideoResolution> standardResolutions =
+    {
+        {"CIF_PAL", 352, 288},
+        {"CIF_NTSC", 352, 240},
+        {"QCIF_PAL", 176, 144},
+        {"QCIF_NTSC", 176, 120}
+    };
 
-/// <summary>
-/// Чтение сдвига из пользовательских аргументов.
-/// </summary>
-/// <param name="offsetXArg"> Сдвиг по горизонтали из аргументов. Может включать значение center для наложения по центру кадра. </param>
-/// <param name="offsetYArg"> Сдвиг по вертикали из аргументов. </param>
-/// <param name="offsetX"> Вывод сдвига по горизонтали в int. </param>
-/// <param name="offsetY"> Вывод сдвига по вертикали в int. </param>
-/// <param name="placeInCenter"> Возвращает True, если пользователь выбрал center в offsetXArg, иначе false. </param>
-/// <returns> Возвращает True, если значения корректны, False, если пользователем допущена ошибка. </returns>
-bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter);
+    /// <summary>
+    /// Чтение сдвига из пользовательских аргументов.
+    /// </summary>
+    /// <param name="offsetXArg"> Сдвиг по горизонтали из аргументов. Может включать значение center для наложения по центру кадра. </param>
+    /// <param name="offsetYArg"> Сдвиг по вертикали из аргументов. </param>
+    /// <param name="offsetX"> Вывод сдвига по горизонтали в int. </param>
+    /// <param name="offsetY"> Вывод сдвига по вертикали в int. </param>
+    /// <param name="placeInCenter"> Возвращает True, если пользователь выбрал center в offsetXArg, иначе false. </param>
+    /// <returns> Возвращает True, если значения корректны, False, если пользователем допущена ошибка. </returns>
+    bool setOffset(char* offsetXArg, char* offsetYArg, int& offsetX, int& offsetY, bool& placeInCenter);
 
-/// <summary>
-/// Чтение выбраного стандарта видео из пользовательских аргументов и получение разрешения этого стандарта. (Выводит ошибки в cerr).
-/// </summary>
-/// <param name="standardId"> Порядковый номер выбранного стандарта. </param>
-/// <param name="width"> Возвращаяемая ширина стандарта.</param>
-/// <param name="height"> Возвращаемая высота стандарта.</param>
-/// <returns> True, в случае успеха, иначе False. </returns>
-bool setVideoResolution(char* argvStandatdId, int& width, int& height);
+    /// <summary>
+    /// Чтение выбраного стандарта видео из пользовательских аргументов и получение разрешения этого стандарта. (Выводит ошибки в cerr).
+    /// </summary>
+    /// <param name="standardId"> Порядковый номер выбранного стандарта. </param>
+    /// <param name="width"> Возвращаяемая ширина стандарта.</param>
+    /// <param name="height"> Возвращаемая высота стандарта.</param>
+    /// <returns> True, в случае успеха, иначе False. </returns>
+    bool setVideoResolution(char* argvStandatdId, int& width, int& height);
 
-/// <summary>
-/// Вызов открытия ofstream для filename с флагом app.
-/// </summary>
-/// <param name="outStream"> ofstream, который будет закрыт и открыт с флагами binary | app. </param>
-/// <param name="filename"> Имя файла, в который будет записывать данные поток. </param>
-/// <returns> True, в случае успеха, иначе False. </returns>
-bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename);
+    /// <summary>
+    /// Вызов открытия ofstream для filename с флагом app.
+    /// </summary>
+    /// <param name="outStream"> ofstream, который будет закрыт и открыт с флагами binary | app. </param>
+    /// <param name="filename"> Имя файла, в который будет записывать данные поток. </param>
+    /// <returns> True, в случае успеха, иначе False. </returns>
+    bool ReopenOfstreamForApp(std::ofstream& outStream, std::string filename);
 
-/// <summary>
-/// Вывод --help.
-/// </summary>
-void printHelp();
+    /// <summary>
+    /// Вывод --help.
+    /// </summary>
+    void printHelp();
+}
