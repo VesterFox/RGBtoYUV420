@@ -5,6 +5,7 @@
 # IDE
 /.vs/*
 /.idea/*
+/tests/lib/*
 
 # Prerequisites
 *.d

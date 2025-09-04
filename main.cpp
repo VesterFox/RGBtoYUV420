@@ -3,12 +3,12 @@
 #include <fstream>
 #include <thread>
 
-#include "yuv.h"
-#include "bmp.h"
-#include "utils.h"
+#include "src/yuv.h"
+#include "src/bmp.h"
+#include "src/utils.h"
 
 bool OverlayBMPonYUV(const std::string& inputYUVVideoFilename, const std::string& inputBMPFilename,
-    const std::string& outputFilename, int videoWidth, int videoHeight, int xOffset, int yOffset, bool placeInCenter)
+                     const std::string& outputFilename, int videoWidth, int videoHeight, int xOffset, int yOffset, bool placeInCenter)
 {
     // Чтение входного видео и сбор необходимой информации о нём
     std::ifstream inputYUVFile(inputYUVVideoFilename, std::ios::binary);
